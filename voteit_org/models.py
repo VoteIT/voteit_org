@@ -68,8 +68,8 @@ class Membership(OrganisationContext):
         verbose_name="Membership Type",
         on_delete=models.RESTRICT,
     )
-    payed: bool = models.BooleanField(
-        verbose_name="Payed?",
+    paid: bool = models.BooleanField(
+        verbose_name="Paid?",
         default=False,
     )
     canceled: bool = models.BooleanField(

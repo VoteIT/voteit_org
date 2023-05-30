@@ -35,10 +35,10 @@ class MembershipAdmin(admin.ModelAdmin):
         "organisation",
         "year",
         "membership_type",
-        "payed",
+        "paid",
         "canceled",
     )
-    list_filter = ("year", "payed", "canceled", "membership_type")
+    list_filter = ("year", "paid", "canceled", "membership_type")
     search_fields = (
         "organisation__title",
         "text",
