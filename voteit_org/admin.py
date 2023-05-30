@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from django.contrib import admin
 
+from voteit.organisation.models import Organisation
+from voteit.organisation.admin import OrganisationAdmin as BaseOrganisationAdmin
 from voteit_org.models import ContactInfo
 from voteit_org.models import Membership
 from voteit_org.models import MembershipType
@@ -57,3 +59,23 @@ class MembershipTypeAdmin(admin.ModelAdmin):
         "title",
         "description",
     )
+
+
+class MembershipInline(admin.TabularInline):
+    model = Membership
+    fields = (
+        "year",
+        "membership_type",
+        "paid",
+        "canceled",
+    )
+    extra = 1
+
+
+# Replace existing
+admin.site.unregister(Organisation)
+
+
+@admin.register(Organisation)
+class OrganisationAdmin(BaseOrganisationAdmin):
+    inlines = [MembershipInline]
