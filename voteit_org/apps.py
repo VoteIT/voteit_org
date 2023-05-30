@@ -7,4 +7,5 @@ class VoteITOrgConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
 
     def ready(self):
-        ...
+        # Register
+        from voteit_org import messages

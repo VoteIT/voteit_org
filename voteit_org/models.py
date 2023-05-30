@@ -50,6 +50,8 @@ class ContactInfo(OrganisationContext):
     def __str__(self):
         return f"{self.organisation.title} contacts"
 
+    objects: models.Manager
+
 
 class Membership(OrganisationContext):
     organisation: Organisation = models.ForeignKey(
@@ -93,6 +95,8 @@ class Membership(OrganisationContext):
     def __str__(self):
         return f"{self.organisation.title} membership {self.year}"
 
+    objects: models.Manager
+
 
 class MembershipType(models.Model):
     title: str = models.CharField(
@@ -115,3 +119,5 @@ class MembershipType(models.Model):
 
     def __str__(self):
         return self.title
+
+    objects: models.Manager
