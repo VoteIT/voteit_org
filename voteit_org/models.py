@@ -63,7 +63,7 @@ class Membership(OrganisationContext):
     year: int = models.PositiveSmallIntegerField(
         verbose_name="Year",
     )
-    membership_type: MembershipType = models.OneToOneField(
+    membership_type: MembershipType = models.ForeignKey(
         "MembershipType",
         verbose_name="Membership Type",
         on_delete=models.RESTRICT,
