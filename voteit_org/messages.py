@@ -21,11 +21,11 @@ from voteit_org.models import ContactInfo
 from voteit_org.rest_api.serializers import ContactInfoSerializer
 
 
-class ContactInfoSchema(BaseModel):
+class SetContactInfoSchema(BaseModel):
     """
-    >>> ContactInfoSchema().dict()
+    >>> SetContactInfoSchema().dict()
     {'text': '', 'generic_email': '', 'invoice_email': '', 'invoice_info': ''}
-    >>> ContactInfoSchema(generic_email='').dict()
+    >>> SetContactInfoSchema(generic_email='').dict()
     {'text': '', 'generic_email': '', 'invoice_email': '', 'invoice_info': ''}
     """
 
@@ -33,10 +33,6 @@ class ContactInfoSchema(BaseModel):
     generic_email: str = ""
     invoice_email: str = ""
     invoice_info: str = ""
-
-    class Config:
-        extra = "allow"
-        arbitrary_types_allowed = True
 
     @validator("generic_email", "invoice_email")
     def optional_email_validation(cls, v: str):
@@ -46,11 +42,17 @@ class ContactInfoSchema(BaseModel):
         return ""
 
 
+class GetContactInfoSchema(BaseModel):
+    class Config:
+        extra = "allow"
+        arbitrary_types_allowed = True
+
+
 @outgoing
 class ContactInfoGet(BaseObjectAdded):
     name = "contact_info.get"
-    schema = ContactInfoSchema
-    data: ContactInfoSchema
+    schema = GetContactInfoSchema
+    data: GetContactInfoSchema
 
 
 class _BaseContactInfo(ContextAction):
@@ -89,8 +91,8 @@ class GetContactInfo(_BaseContactInfo):
 @incoming
 class SetContactInfo(_BaseContactInfo):
     name = "contact_info.set"
-    schema = ContactInfoSchema
-    data: ContactInfoSchema
+    schema = SetContactInfoSchema
+    data: SetContactInfoSchema
 
     def run_job(self) -> ContactInfoGet:
         self.assert_perm()
