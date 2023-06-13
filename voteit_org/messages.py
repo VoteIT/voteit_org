@@ -79,7 +79,13 @@ class GetContactInfo(_BaseContactInfo):
 
     def run_job(self) -> ContactInfoGet:
         self.assert_perm()
-        data = {}
+        # Defaults to make it easier for frontend typing
+        data = {
+            "text": "",
+            "generic_email": "",
+            "invoice_email": "",
+            "invoice_info": "",
+        }
         with suppress(ContactInfo.DoesNotExist):
             ci = self.context.contact_info
             data = ContactInfoSerializer(ci).data
