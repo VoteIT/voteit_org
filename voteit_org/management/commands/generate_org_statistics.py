@@ -15,12 +15,11 @@ class Command(BaseCommand):
     help = "Generate organisation statistics"
 
     def add_arguments(self, parser):
-        # parser.add_argument("-o", help="Output file")
         parser.add_argument("-y", help="Year", default=int(timezone.now().date().year))
         parser.add_argument(
             "--pmin",
-            help="Filtrera bort möten med färre deltagare än det här",
-            default=20,
+            help="Möten med färre deltagare än det här räknas inte",
+            default=15,
             type=int,
         )
         parser.add_argument(
@@ -33,12 +32,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         columns = [
             "Namn",
-            "Möten",
-            "Stora möten",
-            "Bortfiltrerade möten",
+            "Möten (utom små)",
+            "Varav stora möten",
+            "Små möten",
             "Antal användare under året",
+            "Användningstid (dagar dec)",
             "Uppkopplingar",
-            "Effektiv använgningstid",
         ]
         year = int(options["y"])
         year_start = date(year, 1, 1)
@@ -57,7 +56,7 @@ class Command(BaseCommand):
             row.append(
                 meeting_qs.filter(participants_count__gte=options["plarge"]).count()
             )
-            # Bortfiltrerade möten
+            # Små möten
             row.append(
                 meeting_qs.filter(participants_count__lt=options["pmin"]).count()
             )
@@ -66,7 +65,9 @@ class Command(BaseCommand):
                 org.users.filter(
                     connections__online_at__gte=year_start,
                     connections__online_at__lte=year_end,
-                ).count()
+                )
+                .distinct()
+                .count()
             )
             # Uppkopplingar och Effektiv använgningstid
             ts_sum = []
@@ -77,12 +78,13 @@ class Command(BaseCommand):
                 .values_list("online_at", "offline_at")
             ):
                 ts_sum.append(offline_ts - online_ts)
-            row.append(len(ts_sum))
             if ts_sum:
                 ts_total = reduce(lambda x, y: x + y, ts_sum)
-                row.append(f"{ts_total.days} d, {divmod(ts_total.seconds, 3600)[0]} h")
+                row.append(f"{ts_total.days+ts_total.seconds/(24*60*60):.2f}")
             else:
                 row.append(0)
+            row.append(len(ts_sum))
             output.append(row)
+        # Print results
         for row in output:
             self.stdout.write("\t".join(str(x) for x in row))
