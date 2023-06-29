@@ -80,7 +80,7 @@ class Command(BaseCommand):
                 ts_sum.append(offline_ts - online_ts)
             if ts_sum:
                 ts_total = reduce(lambda x, y: x + y, ts_sum)
-                row.append(f"{ts_total.days+ts_total.seconds/(24*60*60):.2f}")
+                row.append(f"{ts_total.days+(ts_total.seconds/(24*60*60)):.2f}")
             else:
                 row.append(0)
             row.append(len(ts_sum))
