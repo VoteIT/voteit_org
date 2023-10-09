@@ -41,7 +41,9 @@ class GetContactInfoTests(TestCase):
         return GetContactInfo
 
     def _mk_one(self, user, **kw):
-        return self._cut(mm={"user_pk": user.pk, "consumer_name": "abc"}, **kw)
+        return self._cut(
+            mm={"user_pk": user.pk, "consumer_name": "abc"}, pk=self.org.pk, **kw
+        )
 
     def test_nothing_exist(self):
         msg = self._mk_one(self.manager)

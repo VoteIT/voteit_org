@@ -2,17 +2,17 @@ from contextlib import suppress
 
 from django.utils.functional import cached_property
 from pydantic import BaseModel
-from pydantic import EmailStr
 from pydantic import validate_email
 from pydantic import validator
 
+try:
+    from envelope.core.message import ContextAction
+except ImportError:
+    from envelope.deferred_jobs.message import ContextAction
 from envelope import Error
-from envelope.core.message import ContextAction
 from envelope.utils import get_error_type
 from envelope.utils import websocket_send
-from voteit.messaging.base import AddedOrUpdatedSchema
 from voteit.messaging.base import BaseObjectAdded
-from voteit.messaging.base import BaseObjectChanged
 from voteit.messaging.decorators import incoming
 from voteit.messaging.decorators import outgoing
 from voteit.organisation.models import Organisation
