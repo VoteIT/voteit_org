@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from django.contrib import admin
+from django.contrib import messages
+
 from voteit.organisation.models import Organisation
 from voteit.organisation.admin import OrganisationAdmin as BaseOrganisationAdmin
 
@@ -41,11 +43,35 @@ class MembershipAdmin(admin.ModelAdmin):
         "paid",
         # "canceled",
     )
-    list_filter = ("year", "paid", "canceled", "membership_type")
+    list_filter = (
+        "year",
+        "paid",
+        "canceled",
+        "membership_type",
+        "organisation__active",
+    )
     search_fields = (
         "organisation__title",
         "text",
     )
+    actions = ["mark_as_paid"]
+
+    @admin.action(description="Mark as paid")
+    def mark_as_paid(self, request, queryset):
+        queryset = queryset.filter(paid=False)
+        changed = queryset.update(paid=True)
+        if changed:
+            self.message_user(
+                request,
+                f"Marked {changed} as paid",
+                messages.SUCCESS,
+            )
+        else:
+            self.message_user(
+                request,
+                f"Nothing to do, did you select unpaid entries?",
+                messages.WARNING,
+            )
 
 
 @admin.register(MembershipType)
