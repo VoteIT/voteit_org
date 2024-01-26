@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from django.contrib import admin
-
 from voteit.organisation.models import Organisation
 from voteit.organisation.admin import OrganisationAdmin as BaseOrganisationAdmin
+
 from voteit_org.models import ContactInfo
 from voteit_org.models import Membership
 from voteit_org.models import MembershipType
@@ -12,6 +12,7 @@ from voteit_org.models import MembershipType
 @admin.register(ContactInfo)
 class ContactInfoAdmin(admin.ModelAdmin):
     autocomplete_fields = ("organisation",)
+    ordering = ("organisation__title",)
     list_display = (
         "organisation",
         "generic_email",
@@ -19,7 +20,6 @@ class ContactInfoAdmin(admin.ModelAdmin):
         "modified",
     )
     list_filter = (
-        "organisation",
         "requires_check",
         "organisation__memberships__year",
     )
@@ -32,13 +32,14 @@ class ContactInfoAdmin(admin.ModelAdmin):
 @admin.register(Membership)
 class MembershipAdmin(admin.ModelAdmin):
     autocomplete_fields = ("organisation",)
+    ordering = ("organisation__title",)
     list_display = (
         "__str__",
         "organisation",
         "year",
         "membership_type",
         "paid",
-        "canceled",
+        # "canceled",
     )
     list_filter = ("year", "paid", "canceled", "membership_type")
     search_fields = (

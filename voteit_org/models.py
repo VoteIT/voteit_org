@@ -93,7 +93,7 @@ class Membership(OrganisationContext):
         ordering = ["-year"]
 
     def __str__(self):
-        return f"{self.organisation.title} membership {self.year}"
+        return f"{self.organisation.title} {self.year}"
 
     objects: models.Manager
 
