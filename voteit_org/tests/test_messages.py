@@ -123,3 +123,18 @@ class SetContactInfoTests(TestCase):
         msg = self._mk_one(self.user)
         with self.assertRaises(UnauthorizedError):
             msg.run_job()
+
+    def test_requires_check_updated(self):
+        msg = self._mk_one(
+            self.manager, generic_email="hello@betahaus.net", text="Well"
+        )
+        msg.run_job()
+        ci = self.org.contact_info
+        ci.requires_check = True
+        ci.save()
+        msg = self._mk_one(
+            self.manager, generic_email="hello@betahaus.net", text="Well"
+        )
+        msg.run_job()
+        ci.refresh_from_db()
+        self.assertFalse(ci.requires_check)

@@ -104,7 +104,7 @@ class SetContactInfo(_BaseContactInfo):
         self.assert_perm()
         instance, _ = ContactInfo.objects.update_or_create(
             organisation=self.context,
-            defaults=self.data.dict(),
+            defaults={"requires_check": False, **self.data.dict()},
         )
         serializer = ContactInfoSerializer(instance)
         response = ContactInfoGet.from_message(self, data=serializer.data)
