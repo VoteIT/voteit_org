@@ -43,6 +43,12 @@ class SetContactInfoSchema(BaseModel):
 
 
 class GetContactInfoSchema(BaseModel):
+    requires_check: bool = True
+    text: str = ""
+    generic_email: str = ""
+    invoice_email: str = ""
+    invoice_info: str = ""
+
     class Config:
         extra = "allow"
         arbitrary_types_allowed = True
@@ -80,15 +86,10 @@ class GetContactInfo(_BaseContactInfo):
     def run_job(self) -> ContactInfoGet:
         self.assert_perm()
         # Defaults to make it easier for frontend typing
-        data = {
-            "text": "",
-            "generic_email": "",
-            "invoice_email": "",
-            "invoice_info": "",
-        }
+        data = {}
         with suppress(ContactInfo.DoesNotExist):
             ci = self.context.contact_info
-            data = ContactInfoSerializer(ci).data
+            data.update(ContactInfoSerializer(ci).data)
         response = ContactInfoGet.from_message(self, data=data)
         websocket_send(response, state=response.SUCCESS, on_commit=False)
         return response
