@@ -19,9 +19,11 @@ class ContactInfoAdmin(admin.ModelAdmin):
         "organisation",
         "generic_email",
         "requires_check",
+        "is_active",
         "modified",
     )
     list_filter = (
+        "organisation__active",
         "requires_check",
         "organisation__memberships__year",
     )
@@ -29,6 +31,10 @@ class ContactInfoAdmin(admin.ModelAdmin):
         "organisation__title",
         "text",
     )
+
+    @admin.display(boolean=True, description="Org active?")
+    def is_active(self, instance: ContactInfo):
+        return instance.organisation.active
 
 
 @admin.register(Membership)
