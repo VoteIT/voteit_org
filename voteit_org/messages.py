@@ -6,6 +6,10 @@ from pydantic import validate_email
 from pydantic import validator
 
 try:
+    from envelope.schemas import NoPayload
+except ImportError:
+    from envelope.core.schemas import NoPayload
+try:
     from envelope.core.message import ContextAction
 except ImportError:
     from envelope.deferred_jobs.message import ContextAction
@@ -64,6 +68,7 @@ class ContactInfoGet(BaseObjectAdded):
 class _BaseContactInfo(ContextAction):
     permission = OrgPermissions.MANAGE
     model = Organisation
+    schema = NoPayload
 
     @cached_property
     def context(self) -> Organisation:
