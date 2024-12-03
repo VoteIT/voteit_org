@@ -4,15 +4,8 @@ from django.utils.functional import cached_property
 from pydantic import BaseModel
 from pydantic import validate_email
 from pydantic import validator
-
-try:
-    from envelope.schemas import NoPayload
-except ImportError:
-    from envelope.core.schemas import NoPayload
-try:
-    from envelope.core.message import ContextAction
-except ImportError:
-    from envelope.deferred_jobs.message import ContextAction
+from envelope.schemas import NoPayload
+from envelope.deferred_jobs.message import ContextAction
 from envelope import Error
 from envelope.utils import get_error_type
 from envelope.utils import websocket_send

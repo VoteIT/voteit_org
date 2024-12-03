@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import csv
+
 from django.contrib import admin
 from django.contrib import messages
+from django.http import HttpResponse
 
 from voteit.organisation.models import Organisation
 from voteit.organisation.admin import OrganisationAdmin as BaseOrganisationAdmin
@@ -26,15 +29,37 @@ class ContactInfoAdmin(admin.ModelAdmin):
         "organisation__active",
         "requires_check",
         "organisation__memberships__year",
+        "modified",
     )
     search_fields = (
         "organisation__title",
         "text",
     )
+    actions = ["download_contacts_csv"]
 
     @admin.display(boolean=True, description="Org active?")
     def is_active(self, instance: ContactInfo):
         return instance.organisation.active
+
+    @admin.action(description="Ladda ner kontakter som CSV")
+    def download_contacts_csv(self, request, queryset):
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = (
+            f'attachment; filename="kontaktuppgifter_voteit.csv"'
+        )
+        fieldnames = [
+            "organisation__title",
+            "generic_email",
+            "invoice_email",
+            "invoice_info",
+            "text",
+            "modified",
+            "requires_check",
+        ]
+        writer = csv.DictWriter(response, fieldnames=fieldnames)
+        writer.writeheader()  # Custom?
+        writer.writerows(x for x in queryset.values(*fieldnames))
+        return response
 
 
 @admin.register(Membership)
@@ -47,12 +72,10 @@ class MembershipAdmin(admin.ModelAdmin):
         "year",
         "membership_type",
         "paid",
-        # "canceled",
     )
     list_filter = (
         "year",
         "paid",
-        "canceled",
         "membership_type",
         "organisation__active",
     )

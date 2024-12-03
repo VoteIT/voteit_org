@@ -72,10 +72,6 @@ class Membership(OrganisationContext):
         verbose_name="Paid?",
         default=False,
     )
-    canceled: bool = models.BooleanField(
-        verbose_name="Canceled?",
-        default=False,
-    )
     text: str = models.TextField(
         verbose_name="Comments",
         default="",
