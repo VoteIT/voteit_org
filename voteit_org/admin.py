@@ -123,7 +123,6 @@ class MembershipInline(admin.TabularInline):
         "year",
         "membership_type",
         "paid",
-        "canceled",
     )
     extra = 1
 
