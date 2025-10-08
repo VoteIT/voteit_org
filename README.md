@@ -1,2 +1,2 @@
-# VoteIT organisaiton internals
+# VoteIT organisation internals
 Housekeeping for our own organisation

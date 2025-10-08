@@ -1,0 +1,28 @@
+[project]
+name = "voteit_org"
+version = "1.0.0"
+description = "VoteIT org internal housekeeping"
+authors = [
+    {name = "VoteIT dev team"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "voteit",
+    "django"
+]
+
+[project.urls]
+Homepage = "https://www.voteit.se/"
+
+[tool.poetry]
+exclude = [
+    "**/tests/*"
+]
+
+[tool.ruff]
+include = ["pyproject.toml", "voteit_org/**/*.py", "src/**/*.py"]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
