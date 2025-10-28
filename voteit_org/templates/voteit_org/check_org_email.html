@@ -1,0 +1,27 @@
+{% extends "voteit/base_email.html" %}
+{% load i18n %}
+{% block body %}
+
+    <h2>Hej {{org_title}}!</h2>
+
+    <p>Det här är ett automatiskt mail från föreningen VoteIT med en påminnelse om att kolla av era uppgifter i vår databas.
+        Antagligen saknas något som kontaktinformation, eller så har ni inte kollat av dem på mer än ett år så därför kommer denna påminnelse.<p>
+
+    <p>Nuvarande uppgifter finns under fliken "Kontaktinformation" på förstasidan - kolla av att de stämmer och tryck spara.
+    Behöver ni hjälp eller undrar något så kontakta support@voteit.se eller skriv i föreningens slack-kanal.</p>
+
+    <p>Bara en person som har rollen organisationsansvarig på {{site_url}} kan ändra uppgifterna.</p>
+
+    {% if org_managers %}
+    <p>Följande person(er) har rollen organisationsansvarig:</p>
+    <ul>
+    {% for name in org_managers %}
+    <li>{{ name }}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+
+    <p>Tack för hjälpen! Och förresten, det går alldeles utmärkt att svara på det här brevet om ni undrar något.</p>
+    <p>Vänligen, Föreningen VoteIT.</p>
+
+{% endblock %}
