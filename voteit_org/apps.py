@@ -8,4 +8,5 @@ class VoteITOrgConfig(AppConfig):
 
     def ready(self):
         # Register
-        from voteit_org import messages
+        from voteit_org import messages  # noqa
+        from voteit_org import jobs  # noqa
