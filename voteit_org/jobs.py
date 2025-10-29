@@ -8,12 +8,13 @@ from django_rq import job
 from django.core.mail import send_mail
 
 from voteit.core import RQ_LONG_QUEUE
+from voteit.core.decorators import schedule_job
 from voteit.core.loggers import notification_logger
 from voteit.organisation.roles import ROLE_ORG_MANAGER
 from voteit_org.models import ContactInfo
 
 
-@job(RQ_LONG_QUEUE)
+@schedule_job("0 1 * * *")
 def org_might_require_check():
     return (
         ContactInfo.objects.filter(requires_check=False, organisation__active=True)
@@ -26,7 +27,7 @@ def org_might_require_check():
     )
 
 
-@job(RQ_LONG_QUEUE)
+@schedule_job("0 10 * * 1")
 def contact_org_about_check():
     contact_qs = (
         ContactInfo.objects.filter(requires_check=True, organisation__active=True)
@@ -35,11 +36,11 @@ def contact_org_about_check():
     )
     for contact in contact_qs.exclude(generic_email=""):
         email_org_about_check.enqueue(contact_info_pk=contact.pk)
-
-    output = "The following active organisations lack generic contact email, so we can't email them about updating their information: \n"
-    for contact in contact_qs.filter(invoice_email=""):
-        output += f"{contact.organisation.title} @ {contact.organisation.host}\n"
-    notification_logger.warning(output)
+    if contact_qs.filter(invoice_email="").exists():
+        output = "The following active organisations lack generic contact email, so we can't email them about updating their information: \n"
+        for contact in contact_qs.filter(invoice_email=""):
+            output += f"{contact.organisation.title} @ {contact.organisation.host}\n"
+        notification_logger.warning(output)
 
 
 def render_org_check_email(contact: ContactInfo, org_managers: set[str]) -> str:
