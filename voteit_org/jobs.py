@@ -27,8 +27,11 @@ def org_might_require_check():
     )
 
 
-@schedule_job("0 10 * * 1")
+@schedule_job("0 10 15 * *")
 def contact_org_about_check():
+    """
+    Send an email once a month with reminder for those who haven't updated
+    """
     contact_qs = (
         ContactInfo.objects.filter(requires_check=True, organisation__active=True)
         .filter(modified__lt=now() - timedelta(days=14))
