@@ -82,6 +82,6 @@ def email_org_about_check(contact_info_pk: int):
     if not org_managers:
         notification_logger.warning(
             output
-            + "\nDet fanns inga aktiva organisationsansvariga, denna organisation behöver hanteras förmodligen hanteras manuellt."
+            + "\nDet fanns inga aktiva organisationsansvariga, denna organisation behöver hanteras manuellt."
         )
     return output
