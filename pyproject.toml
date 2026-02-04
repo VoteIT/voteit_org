@@ -15,14 +15,19 @@ dependencies = [
 [project.urls]
 Homepage = "https://www.voteit.se/"
 
-[tool.poetry]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["voteit_org"]
+exclude = ["**/tests/**"]
+
+[tool.hatch.build.targets.sdist]
+packages = ["voteit_org"]
 exclude = [
-    "**/tests/*"
+  "**/tests/**"
 ]
 
 [tool.ruff]
 include = ["pyproject.toml", "voteit_org/**/*.py", "src/**/*.py"]
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
