@@ -2,6 +2,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from django.db import models
+from rules.contrib.models import RulesModelMixin
 
 from voteit.core.abcs import OrganisationContext
 from voteit.core.fields import RichTextField
@@ -9,7 +10,7 @@ from voteit.core.utils import relaxed_clean_html
 from voteit.organisation.models import Organisation
 
 
-class ContactInfo(OrganisationContext):
+class ContactInfo(RulesModelMixin, OrganisationContext):
     organisation: Organisation = models.OneToOneField(
         Organisation,
         verbose_name="Organisation",
