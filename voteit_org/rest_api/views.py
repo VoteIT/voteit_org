@@ -23,6 +23,7 @@ class ContactInfoViewSet(
 ):
     queryset = ContactInfo.objects.none()
     serializer_class = ContactInfoSerializer
+    expected_default_http_status = 404
     permission_type_map = {
         **VerboseAutoPermissionViewSetMixin.permission_type_map,
         "change": "change",
