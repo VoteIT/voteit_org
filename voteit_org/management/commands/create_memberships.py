@@ -55,5 +55,5 @@ class Command(BaseCommand):
                     transaction.set_rollback(True)
         else:
             self.stdout.write(
-                self.style.WARNING(f"Inga organisationer behövde uppdateras för året")
+                self.style.WARNING("Inga organisationer behövde uppdateras för året")
             )

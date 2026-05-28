@@ -45,7 +45,7 @@ class ContactInfoAdmin(admin.ModelAdmin):
     def download_contacts_csv(self, request, queryset):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = (
-            f'attachment; filename="kontaktuppgifter_voteit.csv"'
+            'attachment; filename="kontaktuppgifter_voteit.csv"'
         )
         fieldnames = [
             "organisation__title",
@@ -98,7 +98,7 @@ class MembershipAdmin(admin.ModelAdmin):
         else:
             self.message_user(
                 request,
-                f"Nothing to do, did you select unpaid entries?",
+                "Nothing to do, did you select unpaid entries?",
                 messages.WARNING,
             )
 
