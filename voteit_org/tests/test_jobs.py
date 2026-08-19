@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core import mail
 from django.test import TestCase
 from django.test import override_settings
-from envelope.testing import testing_channel_layers_setting
+from voteit.messaging.testing import testing_channel_layers_setting
 
 from voteit.organisation.models import Organisation
 from voteit.organisation.roles import ROLE_ORG_MANAGER
