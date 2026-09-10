@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
@@ -31,10 +30,11 @@ class ContactInfoViewSet(
     }
 
     def get_object(self):
-        try:
-            return self.request.user.organisation.contact_info
-        except ObjectDoesNotExist:
-            raise NotFound()
+        instance, _ = ContactInfo.objects.get_or_create(
+            organisation=self.request.user.organisation,
+            defaults={"requires_check": True},
+        )
+        return instance
 
     def get_serializer_class(self):
         if self.action == "create":

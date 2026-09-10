@@ -45,7 +45,11 @@ class ContactInfoViewSetTests(APITestCase):
         url = reverse("contact-info-list")
         self.client.force_authenticate(user=self.manager)
         response = self.client.get(url)
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(200, response.status_code)
+        ci = ContactInfo.objects.get(organisation=self.org)
+        self.assertTrue(ci.requires_check)
+        self.assertEqual("", ci.invoice_email)
+        self.assertEqual("", ci.generic_email)
 
     def test_list(self):
         ci = ContactInfo.objects.create(
