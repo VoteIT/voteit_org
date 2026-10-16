@@ -76,7 +76,7 @@ class ActiveOrganisationsViewSet(mixins.ListModelMixin, GenericViewSet):
     and is only registered when it's set.
     """
 
-    queryset = Organisation.objects.filter(active=True)
+    queryset = Organisation.objects.filter(active=True, host__isnull=False)
     serializer_class = ActiveOrganisationSerializer
     authentication_classes = ()
     permission_classes = (HasOrgListAPIKey,)

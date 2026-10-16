@@ -128,8 +128,7 @@ class ActiveOrganisationsViewSetTests(APITestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual(
             [
-                {"title": "Active org", "url": "https://org.example/"},
-                {"title": "No host", "url": None},
+                {"title": "Active org", "host": "org.example"},
             ],
             response.json(),
         )
