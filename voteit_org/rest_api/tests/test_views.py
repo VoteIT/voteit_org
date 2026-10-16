@@ -1,13 +1,21 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
+from typing import TYPE_CHECKING
+from unittest.mock import patch
+
+from django.test import override_settings
+from django.urls import include
+from django.urls import path
 from django.urls import reverse
+from rest_framework.routers import SimpleRouter
 from rest_framework.test import APITestCase
 
 from voteit.core.testing import run_permission_tests
 from voteit.organisation.models import Organisation
 from voteit.organisation.roles import ROLE_ORG_MANAGER
-from voteit_org.models import ContactInfo
+
+from ...models import ContactInfo
+from ...rest_api.views import ActiveOrganisationsViewSet
 
 if TYPE_CHECKING:
     pass
@@ -92,3 +100,48 @@ class ContactInfoViewSetTests(APITestCase):
             ),
         ):
             func(*params)
+
+
+# Registered only when ORG_LIST_API_KEY is set at startup, so the tests route it
+# themselves
+_router = SimpleRouter()
+_router.register(
+    "active-organisations",
+    ActiveOrganisationsViewSet,
+    basename="active-organisations",
+)
+urlpatterns = [path("api/", include(_router.urls))]
+
+
+@override_settings(ROOT_URLCONF=__name__)
+class ActiveOrganisationsViewSetTests(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.org = Organisation.objects.create(title="Active org", host="org.example")
+        Organisation.objects.create(title="No host")
+        Organisation.objects.create(title="Inactive", host="old.example", active=False)
+        cls.url = reverse("active-organisations-list")
+
+    @patch("voteit_org.rest_api.permissions.ORG_LIST_API_KEY", "secret")
+    def test_list(self):
+        response = self.client.get(self.url, HTTP_API_KEY="secret")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            [
+                {"title": "Active org", "url": "https://org.example/"},
+                {"title": "No host", "url": None},
+            ],
+            response.json(),
+        )
+
+    @patch("voteit_org.rest_api.permissions.ORG_LIST_API_KEY", "secret")
+    def test_bad_or_missing_key(self):
+        self.assertEqual(403, self.client.get(self.url).status_code)
+        response = self.client.get(self.url, HTTP_API_KEY="wrong")
+        self.assertEqual(403, response.status_code)
+
+    @patch("voteit_org.rest_api.permissions.ORG_LIST_API_KEY", "secret")
+    def test_logged_in_user_without_key(self):
+        user = self.org.users.create(username="user", is_superuser=True)
+        self.client.force_login(user)
+        self.assertEqual(403, self.client.get(self.url).status_code)

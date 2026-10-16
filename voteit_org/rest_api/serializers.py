@@ -1,7 +1,10 @@
 from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import SerializerMethodField
 
 from voteit.core.rest_api.utils import validate_model_add
-from voteit_org.models import ContactInfo
+from voteit.organisation.models import Organisation
+
+from ..models import ContactInfo
 
 
 class ContactInfoSerializer(ModelSerializer):
@@ -36,3 +39,15 @@ class CreateContactInfoSerializer(ContactInfoSerializer):
         attrs["organisation"] = user.organisation
         validate_model_add(self, ContactInfo, user.organisation)
         return attrs
+
+
+class ActiveOrganisationSerializer(ModelSerializer):
+    url = SerializerMethodField()
+
+    class Meta:
+        model = Organisation
+        read_only_fields = fields = ("title", "url")
+
+    def get_url(self, obj: Organisation) -> str | None:
+        if obj.host:
+            return f"https://{obj.host}/"
