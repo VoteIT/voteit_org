@@ -14,7 +14,7 @@ class ContactInfo(RulesModelMixin, OrganisationContext):
     organisation: Organisation = models.OneToOneField(
         Organisation,
         verbose_name="Organisation",
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
         related_name="contact_info",
     )
     text: str = RichTextField(
