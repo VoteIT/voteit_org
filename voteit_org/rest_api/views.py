@@ -9,9 +9,14 @@ from rest_framework.viewsets import GenericViewSet
 from voteit.core import PERM
 from voteit.core.rest_api import router
 from voteit.core.rest_api.mixins import VerboseAutoPermissionViewSetMixin
-from voteit_org.models import ContactInfo
-from voteit_org.rest_api.serializers import ContactInfoSerializer
-from voteit_org.rest_api.serializers import CreateContactInfoSerializer
+from voteit.organisation.models import Organisation
+
+from ..models import ContactInfo
+from .permissions import ORG_LIST_API_KEY
+from .permissions import HasOrgListAPIKey
+from .serializers import ActiveOrganisationSerializer
+from .serializers import ContactInfoSerializer
+from .serializers import CreateContactInfoSerializer
 
 
 @router.register("contact-info", basename="contact-info")
@@ -62,3 +67,26 @@ class ContactInfoViewSet(
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
         return Response(serializer.data)
+
+
+class ActiveOrganisationsViewSet(mixins.ListModelMixin, GenericViewSet):
+    """
+    All active organisations, for external services.
+    Requires an Api-Key header matching the ORG_LIST_API_KEY env variable,
+    and is only registered when it's set.
+    """
+
+    queryset = Organisation.objects.filter(active=True, host__isnull=False)
+    serializer_class = ActiveOrganisationSerializer
+    authentication_classes = ()
+    permission_classes = (HasOrgListAPIKey,)
+    # Router tests ask as a participant, without the key
+    expected_default_http_status = 403
+    pagination_class = None
+    filter_backends = ()
+
+
+if ORG_LIST_API_KEY:
+    router.register("active-organisations", basename="active-organisations")(
+        ActiveOrganisationsViewSet
+    )
