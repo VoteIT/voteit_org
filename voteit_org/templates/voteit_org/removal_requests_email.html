@@ -1,0 +1,19 @@
+{% extends "voteit/base_email.html" %}
+{% block body %}
+
+    <h2>Hej {{ org_title }}!</h2>
+
+    <p>{{ pending }} användare har bett om att bli borttagna från {{ site_url }} och väntar på att någon hanterar det.</p>
+
+    <p>Logga in och gå till sidan för borttagningar. Där ser ni vad varje användare är kopplad till, till exempel pågående möten och omröstningar,
+        och kan ta bort dem när ni har bedömt att det är lämpligt.</p>
+
+    {% if no_data_protection_contact %}
+    <p>Ni får det här mailet eftersom ni är organisationsansvarig och organisationen inte har valt någon personuppgiftsansvarig (PUA).
+        Väljer ni en under "Kontaktinformation" går de här påminnelserna bara till den personen.</p>
+    {% endif %}
+
+    <p>Påminnelsen skickas varje vardag så länge det finns begäranden som inte är hanterade.</p>
+    <p>Vänligen, Föreningen VoteIT.</p>
+
+{% endblock %}
