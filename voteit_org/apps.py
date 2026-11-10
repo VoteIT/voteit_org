@@ -10,4 +10,5 @@ class VoteITOrgConfig(AppConfig):
         # Register
         from voteit_org import jobs  # noqa
         from voteit_org import rules  # noqa
+        from voteit_org import signals  # noqa
         from voteit_org.rest_api import views  # noqa

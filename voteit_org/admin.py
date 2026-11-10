@@ -16,7 +16,7 @@ from voteit_org.models import MembershipType
 
 @admin.register(ContactInfo)
 class ContactInfoAdmin(admin.ModelAdmin):
-    autocomplete_fields = ("organisation",)
+    autocomplete_fields = ("organisation", "data_protection_contact")
     ordering = ("organisation__title",)
     list_display = (
         "organisation",

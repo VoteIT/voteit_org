@@ -1,6 +1,8 @@
 from __future__ import annotations
 from datetime import datetime
 
+from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from rules.contrib.models import RulesModelMixin
 
@@ -8,6 +10,7 @@ from voteit.core.abcs import OrganisationContext
 from voteit.core.fields import RichTextField
 from voteit.core.utils import relaxed_clean_html
 from voteit.organisation.models import Organisation
+from voteit.organisation.roles import ROLE_ORG_MANAGER
 
 
 class ContactInfo(RulesModelMixin, OrganisationContext):
@@ -47,11 +50,38 @@ class ContactInfo(RulesModelMixin, OrganisationContext):
         verbose_name="Requires check from organisation",
         default=False,
     )
+    # Swedish: personuppgiftsansvarig (PUA). Not the DPO, that's a separate
+    # legal role (dataskyddsombud).
+    data_protection_contact = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="Data protection contact",
+        help_text="Handles personal data requests. Must be an organisation manager.",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
 
     def __str__(self):
         return f"{self.organisation.title} contacts"
 
+    def clean(self):
+        super().clean()
+        user = self.data_protection_contact
+        if user is not None and not is_valid_data_protection_contact(
+            self.organisation, user
+        ):
+            raise ValidationError(
+                {"data_protection_contact": "Must be a manager of this organisation."}
+            )
+
     objects: models.Manager
+
+
+def is_valid_data_protection_contact(organisation: Organisation, user) -> bool:
+    return user.organisation_id == organisation.pk and organisation.has_roles(
+        user, ROLE_ORG_MANAGER
+    )
 
 
 class Membership(OrganisationContext):

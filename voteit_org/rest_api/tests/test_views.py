@@ -101,6 +101,27 @@ class ContactInfoViewSetTests(APITestCase):
         ):
             func(*params)
 
+    def test_patch_data_protection_contact(self):
+        self.client.force_login(self.manager)
+        url = reverse("contact-info-change")
+        response = self.client.patch(url, {"data_protection_contact": self.manager.pk})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(self.manager.pk, response.json()["data_protection_contact"])
+        response = self.client.patch(url, {"data_protection_contact": None})
+        self.assertEqual(200, response.status_code)
+        self.assertIsNone(response.json()["data_protection_contact"])
+
+    def test_patch_data_protection_contact_not_manager(self):
+        other_org = Organisation.objects.create(host="other")
+        other_manager = other_org.users.create(username="other_manager")
+        other_org.add_roles(other_manager, ROLE_ORG_MANAGER)
+        self.client.force_login(self.manager)
+        url = reverse("contact-info-change")
+        for user in (self.user, other_manager):
+            response = self.client.patch(url, {"data_protection_contact": user.pk})
+            self.assertEqual(400, response.status_code, user)
+            self.assertIn("data_protection_contact", response.json())
+
 
 # Registered only when ORG_LIST_API_KEY is set at startup, so the tests route it
 # themselves

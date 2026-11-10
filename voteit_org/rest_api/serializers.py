@@ -1,9 +1,11 @@
+from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import ModelSerializer
 
 from voteit.core.rest_api.utils import validate_model_add
 from voteit.organisation.models import Organisation
 
 from ..models import ContactInfo
+from ..models import is_valid_data_protection_contact
 
 
 class ContactInfoSerializer(ModelSerializer):
@@ -20,7 +22,15 @@ class ContactInfoSerializer(ModelSerializer):
             "generic_email",
             "invoice_email",
             "invoice_info",
+            "data_protection_contact",
         )
+
+    def validate_data_protection_contact(self, user):
+        if user is not None and not is_valid_data_protection_contact(
+            self.context["request"].user.organisation, user
+        ):
+            raise ValidationError("Must be a manager of this organisation.")
+        return user
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
