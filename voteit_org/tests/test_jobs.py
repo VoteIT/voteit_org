@@ -7,6 +7,9 @@ from django.test import TestCase
 from django.test import override_settings
 from django.utils.timezone import now
 
+from voteit.core.removal import get_postponed_removals
+from voteit.core.removal import postpone_removal
+from voteit.core.testing import IsolatedCacheMixin
 from voteit.organisation.models import Organisation
 from voteit.organisation.roles import ROLE_ORG_MANAGER
 from voteit_org.jobs import email_org_about_check
@@ -67,7 +70,7 @@ class JobsTests(TestCase):
 
 
 @override_settings(REMOVAL_WAIT_HOURS=3)
-class RemovalRequestJobsTests(TestCase):
+class RemovalRequestJobsTests(IsolatedCacheMixin, TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.org = Organisation.objects.create(title="Testorg", host="test.voteit.se")
@@ -148,3 +151,46 @@ class RemovalRequestJobsTests(TestCase):
             email_removal_requests(self.org.pk)
         self.assertEqual([], mail.outbox)
         logger.warning.assert_called_once()
+
+    def test_skips_organisation_with_only_postponed(self):
+        postpone_removal(self.leaving.pk, "remind", now() + timedelta(days=1))
+        with patch.object(email_removal_requests, "enqueue") as enqueue:
+            self.assertEqual(0, remind_about_removal_requests())
+        enqueue.assert_not_called()
+
+    def test_postponed_not_emailed_or_counted(self):
+        postpone_removal(self.leaving.pk, "block", now() + timedelta(days=1))
+        email_removal_requests(self.org.pk)
+        self.assertEqual([], mail.outbox)
+        self.org.users.create(
+            username="also_leaving", removal_requested=now() - timedelta(hours=4)
+        )
+        email_removal_requests(self.org.pk)
+        self.assertIn("1 användare", mail.outbox[0].body)
+
+    def test_emailing_postpones_reminders(self):
+        blocked = self.org.users.create(
+            username="blocked", removal_requested=now() - timedelta(hours=4)
+        )
+        block_until = now() + timedelta(days=10)
+        postpone_removal(blocked.pk, "block", block_until)
+        email_removal_requests(self.org.pk)
+        postponed = get_postponed_removals([self.leaving.pk, blocked.pk])
+        self.assertEqual("remind", postponed[self.leaving.pk]["kind"])
+        self.assertLess(postponed[self.leaving.pk]["until"], now() + timedelta(days=3))
+        self.assertGreater(
+            postponed[self.leaving.pk]["until"], now() + timedelta(days=2)
+        )
+        # Not touched
+        self.assertEqual({"kind": "block", "until": block_until}, postponed[blocked.pk])
+        # So nothing the next day
+        mail.outbox.clear()
+        email_removal_requests(self.org.pk)
+        self.assertEqual([], mail.outbox)
+
+    def test_nobody_to_email_doesnt_postpone(self):
+        self.org.roles.filter(
+            user__in=[self.manager, self.other_manager, self.staff]
+        ).delete()
+        email_removal_requests(self.org.pk)
+        self.assertEqual({}, get_postponed_removals([self.leaving.pk]))

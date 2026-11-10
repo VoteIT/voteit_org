@@ -12,6 +12,9 @@ from voteit.core import RQ_LONG_QUEUE
 from voteit.core.decorators import job
 from voteit.core.decorators import schedule_job
 from voteit.core.loggers import notification_logger
+from voteit.core.removal import POSTPONE_REMIND
+from voteit.core.removal import get_postponed_removals
+from voteit.core.removal import postpone_removal
 from voteit.organisation.models import Organisation
 from voteit.organisation.roles import ROLE_ORG_MANAGER
 from voteit_org.models import ContactInfo
@@ -96,23 +99,29 @@ def email_org_about_check(contact_info_pk: int):
     return output
 
 
+#: Managers aren't reminded about the same request more often than this.
+REMOVAL_REMIND_AGAIN = timedelta(days=3)
+
+
 @schedule_job("0 12 * * 1-5")  # UTC, so 13 or 14 in Sweden
 def remind_about_removal_requests():
     """
     Weekdays: tell each organisation with removal requests that are ready to be
-    handled. Repeats until they are.
+    handled. Repeats until they are, or a manager postpones them.
     """
-    org_pks = (
+    user_orgs = dict(
         get_user_model()
         .objects.filter(
             removal_requested__lte=now() - timedelta(hours=settings.REMOVAL_WAIT_HOURS),
             anonymised__isnull=True,
             organisation__active=True,
         )
-        .values_list("organisation_id", flat=True)
-        .distinct()
+        .values_list("pk", "organisation_id")
     )
-    org_pks = sorted(org_pks)
+    postponed = get_postponed_removals(user_orgs)
+    org_pks = sorted(
+        {org_pk for pk, org_pk in user_orgs.items() if pk not in postponed}
+    )
     for org_pk in org_pks:
         email_removal_requests.enqueue(organisation_pk=org_pk)
     return len(org_pks)
@@ -140,10 +149,14 @@ def get_removal_request_recipients(organisation: Organisation) -> tuple[list, bo
 @job(RQ_LONG_QUEUE)
 def email_removal_requests(organisation_pk: int):
     organisation = Organisation.objects.get(pk=organisation_pk)
-    pending = organisation.users.filter(
-        removal_requested__lte=now() - timedelta(hours=settings.REMOVAL_WAIT_HOURS),
-        anonymised__isnull=True,
-    ).count()
+    pending_pks = set(
+        organisation.users.filter(
+            removal_requested__lte=now() - timedelta(hours=settings.REMOVAL_WAIT_HOURS),
+            anonymised__isnull=True,
+        ).values_list("pk", flat=True)
+    )
+    pending_pks -= get_postponed_removals(pending_pks).keys()
+    pending = len(pending_pks)
     if not pending:
         return
     recipients, fallback = get_removal_request_recipients(organisation)
@@ -169,4 +182,9 @@ def email_removal_requests(organisation_pk: int):
         from_email="support@voteit.se",
         recipient_list=[user.email for user in recipients],
     )
+    # Short of 3 days: this runs just after the daily check, so it must have
+    # expired by that check 3 days later.
+    until = now() + REMOVAL_REMIND_AGAIN - timedelta(hours=1)
+    for user_pk in pending_pks:
+        postpone_removal(user_pk, POSTPONE_REMIND, until)
     return f"Mailade {len(recipients)} person(er) på {organisation.title} om {pending} begäran(den) om borttagning."
