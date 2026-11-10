@@ -21,6 +21,13 @@
     </ul>
     {% endif %}
 
+    {% if data_protection_contact %}
+    <p>Personuppgiftsansvarig (PUA), den som hanterar frågor om personuppgifter: {{ data_protection_contact }}</p>
+    {% else %}
+    <p>Ni har inte valt någon personuppgiftsansvarig (PUA), den som hanterar frågor om personuppgifter.
+        Välj en av de organisationsansvariga under "Kontaktinformation".</p>
+    {% endif %}
+
     <p>Tack för hjälpen! Och förresten, det går alldeles utmärkt att svara på det här brevet om ni undrar något.</p>
     <p>Vänligen, Föreningen VoteIT.</p>
 

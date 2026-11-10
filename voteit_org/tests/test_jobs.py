@@ -42,6 +42,15 @@ class JobsTests(TestCase):
         self.assertIn("Someone Managerly", output)
         self.assertNotIn("Betahaus Person", output)
 
+    def test_render_data_protection_contact(self):
+        output = render_org_check_email(self.contact, set())
+        self.assertIn("inte valt någon personuppgiftsansvarig", output)
+        self.contact.data_protection_contact = self.manager
+        output = render_org_check_email(self.contact, set())
+        self.assertIn("Personuppgiftsansvarig (PUA)", output)
+        self.assertIn("Someone Managerly", output)
+        self.assertNotIn("inte valt någon personuppgiftsansvarig", output)
+
     def test_email_org_about_check(self):
         email_org_about_check(self.contact.id)
         # Email sent?
@@ -50,3 +59,4 @@ class JobsTests(TestCase):
         self.assertEqual(["hello@betahaus.net"], msg.to)
         self.assertEqual("Kolla era uppgifter hos föreningen VoteIT", msg.subject)
         self.assertIn("Kontaktinformation", msg.body)
+        self.assertIn("inte valt någon personuppgiftsansvarig", msg.body)

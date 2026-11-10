@@ -50,19 +50,25 @@ def render_org_check_email(contact: ContactInfo, org_managers: set[str]) -> str:
     site_url = (
         f"https://{contact.organisation.host}/"  # Good enough, we can assume that :)
     )
+    data_protection_contact = None
+    if user := contact.data_protection_contact:
+        data_protection_contact = user.get_full_name() or user.userid or user.username
     return loader.render_to_string(
         "voteit_org/check_org_email.html",
         context={
             "site_url": site_url,
             "org_title": contact.organisation.title,
             "org_managers": org_managers,
+            "data_protection_contact": data_protection_contact,
         },
     )
 
 
 @job(RQ_LONG_QUEUE)  # Basically for keeping data
 def email_org_about_check(contact_info_pk: int):
-    contact = ContactInfo.objects.get(pk=contact_info_pk)
+    contact = ContactInfo.objects.select_related(
+        "organisation", "data_protection_contact"
+    ).get(pk=contact_info_pk)
     org_managers = {
         x.user.get_full_name()
         for x in contact.organisation.roles.filter(assigned__contains=ROLE_ORG_MANAGER)
