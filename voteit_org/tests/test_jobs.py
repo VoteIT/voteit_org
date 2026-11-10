@@ -6,7 +6,6 @@ from django.core import mail
 from django.test import TestCase
 from django.test import override_settings
 from django.utils.timezone import now
-from voteit.messaging.testing import testing_channel_layers_setting
 
 from voteit.organisation.models import Organisation
 from voteit.organisation.roles import ROLE_ORG_MANAGER
@@ -20,7 +19,6 @@ from voteit_org.models import ContactInfo
 User = get_user_model()
 
 
-@override_settings(CHANNEL_LAYERS=testing_channel_layers_setting)
 class JobsTests(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -68,7 +66,7 @@ class JobsTests(TestCase):
         self.assertIn("inte valt någon personuppgiftsansvarig", msg.body)
 
 
-@override_settings(CHANNEL_LAYERS=testing_channel_layers_setting, REMOVAL_WAIT_HOURS=3)
+@override_settings(REMOVAL_WAIT_HOURS=3)
 class RemovalRequestJobsTests(TestCase):
     @classmethod
     def setUpTestData(cls):

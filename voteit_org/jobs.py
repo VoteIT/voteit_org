@@ -6,10 +6,10 @@ from django.db import models
 from django.template import loader
 from django.utils.html import strip_tags
 from django.utils.timezone import now
-from django_rq import job
 from django.core.mail import send_mail
 
 from voteit.core import RQ_LONG_QUEUE
+from voteit.core.decorators import job
 from voteit.core.decorators import schedule_job
 from voteit.core.loggers import notification_logger
 from voteit.organisation.models import Organisation
