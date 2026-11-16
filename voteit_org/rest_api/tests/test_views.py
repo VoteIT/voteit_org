@@ -43,7 +43,7 @@ class ContactInfoViewSetTests(APITestCase):
             method="POST",
             expected=(
                 (self.manager, 201, {}),
-                (None, 403),
+                (None, 401),
                 (self.user, 403),
             ),
         ):
@@ -76,7 +76,7 @@ class ContactInfoViewSetTests(APITestCase):
             expected=(
                 (self.manager, 200, expected_data),
                 (self.user, 404),
-                (None, 403),
+                (None, 401),
             ),
         ):
             func(*params)
@@ -96,7 +96,7 @@ class ContactInfoViewSetTests(APITestCase):
             expected=(
                 (self.manager, 200, {**data, "pk": ci.pk}),
                 (self.user, 403),
-                (None, 403),
+                (None, 401),
             ),
         ):
             func(*params)
